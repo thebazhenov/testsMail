@@ -1,5 +1,6 @@
 allure-pytest==2.14.3
 allure-python-commons==2.14.3
+annotated-types==0.7.0
 attrs==25.3.0
 certifi==2025.6.15
 charset-normalizer==3.4.2
@@ -10,10 +11,13 @@ iniconfig==2.1.0
 packaging==25.0
 playwright==1.52.0
 pluggy==1.6.0
+pydantic==2.11.7
+pydantic_core==2.33.2
 pyee==13.0.0
 Pygments==2.19.2
 pytest==8.4.1
 python-dotenv==1.1.1
 requests==2.32.4
+typing-inspection==0.4.1
 typing_extensions==4.14.0
 urllib3==2.5.0
