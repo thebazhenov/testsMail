@@ -1,0 +1,27 @@
+services:
+  greenmail:
+    image: greenmail/standalone:latest
+    container_name: greenmail
+    ports:
+      - "3025:3025"   # SMTP
+      - "3110:3110"   # POP3
+      - "3143:3143"   # IMAP
+      - "8082:8080"   # GreenMail API
+    environment:
+      GREENMAIL_USERS: "test@localhost.com:test,roman@localhost.com:test"
+      GREENMAIL_VERBOSE: "true"
+
+  roundcube:
+    image: roundcube/roundcubemail:latest
+    container_name: roundcube
+    depends_on:
+      - greenmail
+    ports:
+      - "8081:80"
+    environment:
+      ROUNDCUBEMAIL_DEFAULT_HOST: "greenmail"
+      ROUNDCUBEMAIL_DEFAULT_PORT: 3143
+      ROUNDCUBEMAIL_SMTP_SERVER: "greenmail"
+      ROUNDCUBEMAIL_SMTP_PORT: 3025
+      ROUNDCUBEMAIL_IMAP_SERVER: "greenmail"
+      ROUNDCUBEMAIL_IMAP_PORT: 3143
