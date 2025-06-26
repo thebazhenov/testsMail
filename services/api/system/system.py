@@ -6,15 +6,7 @@ from requests import Response
 
 class System(BaseApiClient):
 
-    def __init__(self, base_url):
-        super().__init__(base_url)
-        self.configuration = {
-            3025: "smtp",
-            3110: "pop3",
-            3143: "imap",
-        }
-
-    @allure.step("Проверить статус сервера через GET запрос на endpoint /api/service/readiness")
+    @allure.step("Получить статус сервера через GET запрос на endpoint /api/service/readiness")
     def checks_greenmail_readiness(self) -> Response:
         """
         Проверка статуса сервера
@@ -44,10 +36,19 @@ class System(BaseApiClient):
         """
         return self._request(method="POST", endpoint="/api/mail/purge", json=data)
 
-    def check_data_configuration(self, models_list):
+    @staticmethod
+    def check_data_configuration(models_list, configuration: dict) -> bool:
+        """
+        Проверка конфигурации сервера
+        :param configuration: Словарь, где ключ номер порта, а значение протокол
+        :param models_list: CurrentConfiguration.serverSetups
+        :return: Возвращает true в случае, если все совпало
+        """
+        if len(models_list) < 1:
+            return False
         for model in models_list:
-            if model.port in self.configuration:
-                assert self.configuration.get(model.port) == model.protocol, \
-                    f"Протокол для порта {model.port} должен быть '{self.configuration[model.port]}', но получен '{model.protocol}'"
+            if model.port in configuration:
+                assert configuration.get(model.port) == model.protocol, \
+                    f"Протокол для порта {model.port} должен быть '{configuration[model.port]}', но получен '{model.protocol}'"
         return True
 

@@ -14,7 +14,7 @@ class TestSystem:
         cls.system_api = System(base_url=API_URL)
 
 
-    @allure.title("Проверка статуса сервера через POST запрос на endpoint /api/service/readiness")
+    @allure.title("Получение статуса сервера через POST запрос на endpoint /api/service/readiness")
     def test_check_greenmail_readiness(self):
         response = self.system_api.checks_greenmail_readiness()
         assert response.status_code == 200, response.status_code
@@ -26,7 +26,12 @@ class TestSystem:
         response = self.system_api.gets_current_greenmail_configuration()
         assert response.status_code == 200, response.status_code
         model = CurrentConfiguration(**response.json())
-        assert self.system_api.check_data_configuration(model.serverSetups)
+        configuration = {
+            3025: "smtp",
+            3110: "pop3",
+            3143: "imap",
+        }
+        assert self.system_api.check_data_configuration(model.serverSetups, configuration=configuration)
 
     @allure.title("Применение конфигурации через POST запрос на endpoint /api/service/reset")
     def test_restart_greenmail_service(self):
