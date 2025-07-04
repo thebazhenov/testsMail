@@ -1,65 +1,48 @@
 pipeline {
     agent any
 
-    parameters {
-        string(name: 'MARK', defaultValue: '', description: 'Pytest marker to run (e.g. smoke, regression, ui). Leave empty to run all tests.')
-    }
-
     environment {
         PYTHON_ENV = 'venv'
-    }
-
-    tools {
-        python 'Python3'
+        PATH = "/usr/local/bin:${env.PATH}"  // чтобы python3 из /usr/local/bin был доступен
     }
 
     stages {
         stage('Checkout') {
+            steps { checkout scm }
+        }
+
+        stage('Setup Python & Dependencies') {
             steps {
-                checkout scm
+                sh '''
+                  python3 -m venv ${PYTHON_ENV}
+                  . ${PYTHON_ENV}/bin/activate
+                  pip install --upgrade pip
+                  pip install -r requirements.txt
+                  playwright install --with-deps
+                '''
             }
         }
 
-        stage('Create venv & Install Requirements') {
+        stage('Start Services') {
             steps {
-                sh '''
-                    python -m venv ${PYTHON_ENV}
-                    . ${PYTHON_ENV}/bin/activate
-                    pip install --upgrade pip
-                    pip install -r testsMailProject/requirements.txt
-                    playwright install --with-deps
-                '''
+                sh 'docker-compose up -d --build'
             }
         }
 
         stage('Run Tests') {
             steps {
-                script {
-                    def markerOption = params.MARK?.trim() ? "-m ${params.MARK}" : ""
-                    sh """
-                        . ${PYTHON_ENV}/bin/activate
-                        pytest testsMailProject/ ${markerOption} --alluredir=testsMailProject/allure-results
-                    """
-                }
-            }
-        }
-
-        stage('Allure Report') {
-            when {
-                expression { fileExists('testsMailProject/allure-results') }
-            }
-            steps {
-                allure includeProperties: false, jdk: '', results: [[path: 'testsMailProject/allure-results']]
+                sh '''
+                  . ${PYTHON_ENV}/bin/activate
+                  pytest --alluredir=allure-results
+                '''
             }
         }
     }
 
     post {
         always {
+            sh 'docker-compose down'
             archiveArtifacts artifacts: '**/screenshots/*.png', allowEmptyArchive: true
-        }
-        failure {
-            echo '❌ Tests failed!'
         }
     }
 }
