@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         PYTHON_ENV = 'venv'
-        PATH = "/usr/local/bin:${env.PATH}"  // чтобы python3 из /usr/local/bin был доступен
+        PATH = "/usr/local/bin:${env.PATH}"
     }
 
     stages {
@@ -20,12 +20,6 @@ pipeline {
                   pip install -r requirements.txt
                   playwright install --with-deps
                 '''
-            }
-        }
-
-        stage('Start Services') {
-            steps {
-                sh 'docker-compose up -d --build'
             }
         }
 
