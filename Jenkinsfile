@@ -35,15 +35,16 @@ pipeline {
         }
 
         stage('Allure Report') {
-            when {
-                expression { fileExists('allure-results') }
-            }
+            when { expression { fileExists('allure-results') } }
             steps {
-                // публикация отчёта через плагин Allure
-                allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+            // вызов DSL-шага плагина
+            allure([
+              includeProperties: false,
+              jdk: '',                              // если нужен JDK, иначе оставьте ''
+              results: [[ path: 'allure-results' ]],
+            ])
             }
         }
-    }
 
     post {
         always {
