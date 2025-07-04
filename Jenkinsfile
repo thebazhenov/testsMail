@@ -1,16 +1,18 @@
 pipeline {
     agent any
 
+    tools {
+        allure 'Allure'
+    }
+
     environment {
         PYTHON_ENV = 'venv'
-        PATH = "/usr/local/bin:${env.PATH}"  // чтобы python3 из /usr/local/bin был доступен
+        PATH = "/usr/local/bin:${env.PATH}"
     }
 
     stages {
         stage('Checkout') {
-            steps {
-                checkout scm
-            }
+            steps { checkout scm }
         }
 
         stage('Setup Python & Dependencies') {
@@ -35,14 +37,11 @@ pipeline {
         }
 
         stage('Allure Report') {
-            when {
-                expression { fileExists('allure-results') }
-            }
+            when { expression { fileExists('allure-results') } }
             steps {
-                // вызов DSL-шага Allure Jenkins Plugin
                 allure([
                     includeProperties: false,
-                    jdk: '',                              // если нужен JDK, иначе оставьте ''
+                    jdk: '',
                     results: [[ path: 'allure-results' ]],
                 ])
             }
@@ -51,7 +50,6 @@ pipeline {
 
     post {
         always {
-            // сохраняем скриншоты, если они есть
             archiveArtifacts artifacts: '**/screenshots/*.png', allowEmptyArchive: true
         }
     }
