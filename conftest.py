@@ -2,13 +2,42 @@ import os
 import pytest
 from dotenv import load_dotenv
 
-from services import Users, API_URL
+from playwright.sync_api import sync_playwright
+
+from config.base_test import BaseTest
+from services import Users, API_URL, MAIL_URL
 from services.api.system.models import Message
 
 load_dotenv()
 
 USER_LOGIN = os.getenv("USER_LOGIN")
 USER_PASSWORD = os.getenv("USER_PASSWORD")
+
+
+@pytest.fixture(params=["chromium", "firefox", "webkit"], scope="session")
+def browser(request):
+    browser_name = request.param
+    with sync_playwright() as playwright:
+        browser = getattr(playwright, browser_name).launch(headless=False, )
+        yield browser
+        browser.close()
+
+
+@pytest.fixture
+def page(browser):
+    context = browser.new_context(
+        viewport={"width": 1920, "height": 1080},
+        user_agent=(
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4_1) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/114.0.0.0 Safari/537.36"
+        ),
+        is_mobile=False,
+        locale="ru-RU"
+    )
+    page = context.new_page()
+    yield page
+    context.close()
 
 
 @pytest.fixture(scope="session")
@@ -90,3 +119,17 @@ def prepare_user(request, search_user, create_user):
         assert Message(**response.json())
 
     return create_user
+
+@pytest.fixture(scope="function")
+def base_test(page) -> BaseTest:
+    return BaseTest(page)
+
+@pytest.fixture(scope="function")
+def login_in_system(request, base_test):
+    params = request.param if hasattr(request, 'param') and isinstance(request.param, dict) else {}
+    user_login = params.get("login", USER_LOGIN)
+    user_password = params.get("password", USER_PASSWORD)
+    base_test.login_page.open(url=MAIL_URL)
+    base_test.login_page.login(email=user_login, password=user_password)
+
+    return params if hasattr(request, "param") else {"login": USER_LOGIN, "password": USER_PASSWORD}

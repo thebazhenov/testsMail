@@ -1,3 +1,7 @@
+import smtplib
+from email.mime.text import MIMEText
+from os import login_tty
+
 import allure
 
 from requests import Response
@@ -50,3 +54,26 @@ class Users(BaseApiClient):
             if user_login == current_login and current_email == user_email:
                 return user
         return False
+
+    @staticmethod
+    def form_letter(email_from: str, email_to: str,
+                   subject: str, text: str):
+        msg = MIMEText(text)
+        msg["Subject"] = subject
+        msg["From"] = email_from
+        msg["To"] = email_to
+
+        return msg
+
+    def send_email(self, login: str, email_to: str, password: str):
+        smtp_host = "localhost"
+        smtp_port = 3025
+        with smtplib.SMTP(smtp_host, smtp_port) as server:
+            server.login(login, password)
+            msg = self.form_letter(email_from=login,
+                                   email_to=email_to,
+                                   subject="Test",
+                                   text="Test letter")
+            server.sendmail(from_addr=msg["From"], to_addrs=msg["To"], msg=msg.as_string())
+            print("letter sending")
+

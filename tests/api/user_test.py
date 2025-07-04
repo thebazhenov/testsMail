@@ -48,5 +48,3 @@ class TestUsers:
         assert model.message == f"User '{email}' deleted"
 
 
-
-
