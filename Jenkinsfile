@@ -8,7 +8,9 @@ pipeline {
 
     stages {
         stage('Checkout') {
-            steps { checkout scm }
+            steps {
+                checkout scm
+            }
         }
 
         stage('Setup Python & Dependencies') {
@@ -31,10 +33,21 @@ pipeline {
                 '''
             }
         }
+
+        stage('Allure Report') {
+            when {
+                expression { fileExists('allure-results') }
+            }
+            steps {
+                // публикация отчёта через плагин Allure
+                allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+            }
+        }
     }
 
     post {
         always {
+            // сохраняем скриншоты, если они есть
             archiveArtifacts artifacts: '**/screenshots/*.png', allowEmptyArchive: true
         }
     }
