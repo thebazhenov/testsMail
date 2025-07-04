@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         PYTHON_ENV = 'venv'
-        PATH = "/usr/local/bin:${env.PATH}"
+        PATH = "/usr/local/bin:${env.PATH}"  // чтобы python3 из /usr/local/bin был доступен
     }
 
     stages {
@@ -35,7 +35,6 @@ pipeline {
 
     post {
         always {
-            sh 'docker-compose down'
             archiveArtifacts artifacts: '**/screenshots/*.png', allowEmptyArchive: true
         }
     }
