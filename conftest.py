@@ -37,7 +37,7 @@ def pytest_generate_tests(metafunc):
     """
     if "browser_name" in metafunc.fixturenames:
         browsers = metafunc.config.getoption("browser")
-        if not browsers:
+        if not browsers or browsers == "all":
             # если ничего не передали, запускаем все
             browsers = ["chromium", "firefox", "webkit"]
         metafunc.parametrize("browser_name", browsers, scope="session")

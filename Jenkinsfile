@@ -3,7 +3,7 @@ pipeline {
 
     parameters {
         choice(name: 'BROWSER',
-               choices: ['chromium', 'firefox', 'webkit'],
+               choices: ['chromium', 'firefox', 'webkit', 'all'],
                description: 'Select the browser to run tests.')
         string(name: 'MARKER', defaultValue: 'full_regression', description: 'Pytest marker to run tests (e.g. smoke, regression, ui). Leave empty to run all.')
     }
