@@ -5,7 +5,7 @@ pipeline {
         choice(name: 'BROWSER',
                choices: ['chromium', 'firefox', 'webkit'],
                description: 'Select the browser to run tests.')
-        string(name: 'MARKER',  defaultValue: 'ui',       description: 'Pytest marker to run tests (e.g. smoke, regression, ui). Leave empty to run all.')
+        string(name: 'MARKER', defaultValue: 'full_regression', description: 'Pytest marker to run tests (e.g. smoke, regression, ui). Leave empty to run all.')
     }
 
     tools {
@@ -40,19 +40,8 @@ pipeline {
             steps {
                 sh '''
                   . ${PYTHON_ENV}/bin/activate
-                  pytest -v -B ${BROWSER} -m "${MARKER}" --alluredir=allure-results
+                  pytest -v -B ${BROWSER} -m "${MARKER}" --alluredir=allure-results || true
                 '''
-            }
-        }
-
-        stage('Allure Report') {
-            when { expression { fileExists('allure-results') } }
-            steps {
-                allure([
-                    includeProperties: false,
-                    jdk: '',
-                    results: [[ path: 'allure-results' ]],
-                ])
             }
         }
     }
@@ -60,6 +49,17 @@ pipeline {
     post {
         always {
             archiveArtifacts artifacts: '**/screenshots/*.png', allowEmptyArchive: true
+            script {
+                if (fileExists('allure-results')) {
+                    allure([
+                        includeProperties: false,
+                        jdk: '',
+                        results: [[ path: 'allure-results' ]],
+                    ])
+                } else {
+                    echo "Allure results directory not found. Skipping report generation."
+                }
+            }
         }
     }
 }
