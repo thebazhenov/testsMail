@@ -1,6 +1,13 @@
 pipeline {
     agent any
 
+    parameters {
+        choice(name: 'BROWSER',
+               choices: ['chromium', 'firefox', 'webkit'],
+               description: 'Select the browser to run tests.')
+        string(name: 'MARKER',  defaultValue: 'ui',       description: 'Pytest marker to run tests (e.g. smoke, regression, ui). Leave empty to run all.')
+    }
+
     tools {
         allure 'Allure'
     }
@@ -8,6 +15,8 @@ pipeline {
     environment {
         PYTHON_ENV = 'venv'
         PATH = "/usr/local/bin:${env.PATH}"
+        BROWSER = "${params.BROWSER}"
+        MARKER  = "${params.MARKER}"
     }
 
     stages {
@@ -31,7 +40,7 @@ pipeline {
             steps {
                 sh '''
                   . ${PYTHON_ENV}/bin/activate
-                  pytest --alluredir=allure-results
+                  pytest -v -B ${BROWSER} -m "${MARKER}" --alluredir=allure-results
                 '''
             }
         }

@@ -51,4 +51,3 @@ class System(BaseApiClient):
                 assert configuration.get(model.port) == model.protocol, \
                     f"Протокол для порта {model.port} должен быть '{configuration[model.port]}', но получен '{model.protocol}'"
         return True
-

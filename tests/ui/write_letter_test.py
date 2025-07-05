@@ -1,17 +1,14 @@
-import time
-from itertools import count
-
 import allure
 import pytest
 
 from conftest import USER_LOGIN, login_in_system
-from main_test import delete_all_message
 
 
 @pytest.fixture(scope="function")
 def open_send_letter_page(base_test, login_in_system):
     base_test.main_page.open_window_letter()
     return login_in_system
+
 
 @pytest.fixture(scope="function", autouse=False)
 def send_letter(base_test, open_send_letter_page, request):
@@ -25,12 +22,15 @@ def send_letter(base_test, open_send_letter_page, request):
     base_test.write_letter_page.send_message()
     return params if hasattr(request, "param") else {"whoam": USER_LOGIN, "topic": topic, "message": message}
 
+@pytest.mark.ui
+@pytest.mark.full_regression
+@allure.epic("WriteLetterPageUI")
 class TestWriteLetter:
 
     @pytest.mark.parametrize(
         "allure_title, whoam",
         [
-            pytest.param("Test", USER_LOGIN,marks=pytest.mark.critical),
+            pytest.param("Заполнение поля 'Кому'", USER_LOGIN,marks=pytest.mark.critical),
             ("Test", "testuser@gmail.com")
         ]
     )
@@ -41,7 +41,7 @@ class TestWriteLetter:
     @pytest.mark.parametrize(
         "allure_title, topic",
         [
-            pytest.param("Test", "Test topic")
+            pytest.param("Заполнение поля 'Тема'", "Test topic")
         ]
     )
     def test_typing_topic(self, base_test, open_send_letter_page, allure_title, topic: str):
@@ -51,7 +51,7 @@ class TestWriteLetter:
     @pytest.mark.parametrize(
         "allure_title, message",
         [
-            pytest.param("Test", "test message")
+            pytest.param("Заполнение текста письма", "test message")
         ]
     )
     def test_typing_message(self, base_test, open_send_letter_page, allure_title, message: str):
@@ -61,13 +61,13 @@ class TestWriteLetter:
     @pytest.mark.parametrize(
         "allure_title, send_letter",
         [
-            ("Test", {"login": USER_LOGIN, "topic": "topic", "message": "message"})
+            ("Отправка письмама", {"login": USER_LOGIN, "topic": "topic", "message": "message"})
         ],
         indirect=["send_letter"]
     )
     def test_send_message(self, base_test, open_send_letter_page, delete_all_message, allure_title: str,
                           send_letter):
         allure.dynamic.title(allure_title)
-        with allure.step(""):
+        with allure.step("Отправить письмо, заполнив все данные"):
             assert base_test.write_letter_page.get_text_in_label(text="Отправка сообщения...") == "Отправка сообщения..."
             assert base_test.write_letter_page.get_text_in_label(text="Сообщение отправлено") == "Сообщение отправлено."
