@@ -19,16 +19,13 @@ SCREENSHOT_DIR = os.getenv("SCREENSHOT_DIR", "screenshots")
 
 def pytest_addoption(parser):
     """
-    Добавление опции --browser / -b
+    Добавление опции --browser / -B
     """
     parser.addoption(
         "--browser", "-B",
         action="append",
-        choices=["chromium", "firefox", "webkit"],
-        help="Browser(s) to run tests against. Repeatable, e.g. -b chromium -b webkit. "
-             "If omitted, all browsers will be used."
+        help="Browser(s) to run tests against. Use 'all' or repeat: -B chromium -B firefox"
     )
-
 
 
 def pytest_generate_tests(metafunc):
@@ -37,9 +34,10 @@ def pytest_generate_tests(metafunc):
     """
     if "browser_name" in metafunc.fixturenames:
         browsers = metafunc.config.getoption("browser")
-        if not browsers or browsers == "all":
-            # если ничего не передали, запускаем все
+
+        if not browsers or "all" in browsers:
             browsers = ["chromium", "firefox", "webkit"]
+
         metafunc.parametrize("browser_name", browsers, scope="session")
 
 
