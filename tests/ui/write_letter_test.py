@@ -35,6 +35,7 @@ class TestWriteLetter:
         ]
     )
     def test_typing_whoam(self, base_test, open_send_letter_page, allure_title, whoam: str):
+        allure.dynamic.title(allure_title)
         base_test.write_letter_page.typing_whoam(whoam=whoam)
         assert base_test.write_letter_page.get_text_in_whoam() == whoam
 
@@ -45,6 +46,7 @@ class TestWriteLetter:
         ]
     )
     def test_typing_topic(self, base_test, open_send_letter_page, allure_title, topic: str):
+        allure.dynamic.title(allure_title)
         base_test.write_letter_page.typing_topic(topic=topic)
         assert base_test.write_letter_page.get_text_in_topic() == topic
 
@@ -55,6 +57,7 @@ class TestWriteLetter:
         ]
     )
     def test_typing_message(self, base_test, open_send_letter_page, allure_title, message: str):
+        allure.dynamic.title(allure_title)
         base_test.write_letter_page.typing_message(text=message)
         assert base_test.write_letter_page.get_text_in_message() == message
 
